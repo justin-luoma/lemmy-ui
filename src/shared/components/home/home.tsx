@@ -111,6 +111,7 @@ interface HomeState {
   siteRes: GetSiteResponse;
   finished: Map<CommentId, boolean | undefined>;
   isIsomorphic: boolean;
+  lazyLoad: boolean;
 }
 
 interface HomeProps {
@@ -231,6 +232,7 @@ export class Home extends Component<any, HomeState> {
     subscribedCollapsed: false,
     finished: new Map(),
     isIsomorphic: false,
+    lazyLoad: false,
   };
 
   constructor(props: any, context: any) {
@@ -305,6 +307,9 @@ export class Home extends Component<any, HomeState> {
     }
 
     setupTippy();
+    this.setState({
+      lazyLoad: localStorage.getItem("auto-expand") === "true",
+    });
   }
 
   static async fetchInitialData({
@@ -683,6 +688,7 @@ export class Home extends Component<any, HomeState> {
               enableNsfw={enableNsfw(siteRes)}
               allLanguages={siteRes.all_languages}
               siteLanguages={siteRes.discussion_languages}
+              lazyLoad={this.state.lazyLoad}
               onBlockPerson={this.handleBlockPerson}
               onPostEdit={this.handlePostEdit}
               onPostVote={this.handlePostVote}

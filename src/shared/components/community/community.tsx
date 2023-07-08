@@ -112,6 +112,7 @@ interface State {
   showSidebarMobile: boolean;
   finished: Map<CommentId, boolean | undefined>;
   isIsomorphic: boolean;
+  lazyLoad: boolean;
 }
 
 interface CommunityProps {
@@ -153,6 +154,7 @@ export class Community extends Component<
     showSidebarMobile: false,
     finished: new Map(),
     isIsomorphic: false,
+    lazyLoad: false,
   };
   private readonly mainContentRef: RefObject<HTMLElement>;
   constructor(props: RouteComponentProps<{ name: string }>, context: any) {
@@ -226,6 +228,9 @@ export class Community extends Component<
     }
 
     setupTippy();
+    this.setState({
+      lazyLoad: localStorage.getItem("auto-expand") === "true",
+    });
   }
 
   static async fetchInitialData({
@@ -414,6 +419,7 @@ export class Community extends Component<
               enableNsfw={enableNsfw(site_res)}
               allLanguages={site_res.all_languages}
               siteLanguages={site_res.discussion_languages}
+              lazyLoad={this.state.lazyLoad}
               onBlockPerson={this.handleBlockPerson}
               onPostEdit={this.handlePostEdit}
               onPostVote={this.handlePostVote}

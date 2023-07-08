@@ -33,6 +33,7 @@ interface PostListingsProps {
   enableDownvotes?: boolean;
   enableNsfw?: boolean;
   viewOnly?: boolean;
+  lazyLoad?: boolean;
   onPostEdit(form: EditPost): void;
   onPostVote(form: CreatePostLike): void;
   onPostReport(form: CreatePostReport): void;
@@ -79,6 +80,7 @@ export class PostListings extends Component<PostListingsProps, any> {
                 viewOnly={this.props.viewOnly}
                 allLanguages={this.props.allLanguages}
                 siteLanguages={this.props.siteLanguages}
+                lazyLoad={this.props.lazyLoad}
                 onPostEdit={this.props.onPostEdit}
                 onPostVote={this.props.onPostVote}
                 onPostReport={this.props.onPostReport}
