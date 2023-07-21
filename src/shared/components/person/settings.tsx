@@ -91,6 +91,11 @@ interface SettingsState {
   searchCommunityOptions: Choice[];
   searchPersonLoading: boolean;
   searchPersonOptions: Choice[];
+  localSettings: {
+    blurNsfw?: boolean;
+    blurNsfwCommunity?: boolean;
+    autoExpandMedia?: boolean;
+  };
 }
 
 type FilterType = "user" | "community";
@@ -148,6 +153,7 @@ export class Settings extends Component<any, SettingsState> {
     searchCommunityOptions: [],
     searchPersonLoading: false,
     searchPersonOptions: [],
+    localSettings: {},
   };
 
   constructor(props: any, context: any) {
@@ -229,7 +235,15 @@ export class Settings extends Component<any, SettingsState> {
 
   async componentDidMount() {
     setupTippy();
-    this.setState({ themeList: await fetchThemeList() });
+    this.setState({
+      themeList: await fetchThemeList(),
+      localSettings: {
+        blurNsfw: localStorage.getItem("blur-nsfw") === "true",
+        blurNsfwCommunity:
+          localStorage.getItem("blur-nsfw-community") === "true",
+        autoExpandMedia: localStorage.getItem("auto-expand") === "true",
+      },
+    });
   }
 
   get documentTitle(): string {
@@ -279,6 +293,9 @@ export class Settings extends Component<any, SettingsState> {
             </div>
           </div>
           <div className="col-12 col-md-6">
+            <div className="card border-secondary mb-3">
+              <div className="card-body">{this.changeLocalSettings()}</div>
+            </div>
             <div className="card border-secondary mb-3">
               <div className="card-body">{this.changePasswordHtmlForm()}</div>
             </div>
@@ -382,6 +399,66 @@ export class Settings extends Component<any, SettingsState> {
               ) : (
                 capitalizeFirstLetter(I18NextService.i18n.t("save"))
               )}
+            </button>
+          </div>
+        </form>
+      </>
+    );
+  }
+
+  changeLocalSettings() {
+    return (
+      <>
+        <h5>Local Settings</h5>
+        <form>
+          <div className="form-group">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                id="user-blur-images"
+                type="checkbox"
+                checked={this.state.localSettings.blurNsfw}
+                onChange={linkEvent(this, this.handleBlurNsfwChange)}
+              />
+              <label className="form-check-label" htmlFor="user-blur-images">
+                Blur NSFW images
+              </label>
+            </div>
+          </div>
+          <div className="form-group">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                id="user-blur-community-icons"
+                type="checkbox"
+                checked={this.state.localSettings.blurNsfwCommunity}
+                onChange={linkEvent(this, this.handleBlurNsfwCommunityChange)}
+              />
+              <label
+                className="form-check-label"
+                htmlFor="user-blur-community-icons"
+              >
+                Blur NSFW community avatars
+              </label>
+            </div>
+          </div>
+          <div className="form-group">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                id="user-auto-expand"
+                type="checkbox"
+                checked={this.state.localSettings.autoExpandMedia}
+                onChange={linkEvent(this, this.handleAutoExpandChange)}
+              />
+              <label className="form-check-label" htmlFor="user-auto-expand">
+                Auto expand images
+              </label>
+            </div>
+          </div>
+          <div className="form-group">
+            <button type="submit" className="btn btn-block btn-secondary mr-4">
+              {capitalizeFirstLetter(I18NextService.i18n.t("save"))}
             </button>
           </div>
         </form>
@@ -1171,6 +1248,24 @@ export class Settings extends Component<any, SettingsState> {
     const oldPass: string | undefined =
       event.target.value == "" ? undefined : event.target.value;
     i.setState(s => ((s.changePasswordForm.old_password = oldPass), s));
+  }
+
+  handleBlurNsfwChange(i: Settings, event: any) {
+    i.state.localSettings.blurNsfw = event.target.checked;
+    i.setState(i.state);
+    localStorage.setItem("blur-nsfw", event.target.checked);
+  }
+
+  handleBlurNsfwCommunityChange(i: Settings, event: any) {
+    i.state.localSettings.blurNsfwCommunity = event.target.checked;
+    i.setState(i.state);
+    localStorage.setItem("blur-nsfw-community", event.target.checked);
+  }
+
+  handleAutoExpandChange(i: Settings, event: any) {
+    i.state.localSettings.autoExpandMedia = event.target.checked;
+    i.setState(i.state);
+    localStorage.setItem("auto-expand", event.target.checked);
   }
 
   async handleSaveSettingsSubmit(i: Settings, event: any) {

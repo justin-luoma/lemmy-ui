@@ -41,6 +41,7 @@ interface CommunitiesState {
   siteRes: GetSiteResponse;
   searchText: string;
   isIsomorphic: boolean;
+  blur: boolean;
 }
 
 interface CommunitiesProps {
@@ -59,6 +60,7 @@ export class Communities extends Component<any, CommunitiesState> {
     siteRes: this.isoData.site_res,
     searchText: "",
     isIsomorphic: false,
+    blur: true,
   };
 
   constructor(props: any, context: any) {
@@ -82,6 +84,10 @@ export class Communities extends Component<any, CommunitiesState> {
     if (!this.state.isIsomorphic) {
       await this.refetch();
     }
+
+    this.setState({
+      blur: localStorage.getItem("blur-nsfw-community") === "true",
+    });
   }
 
   get documentTitle(): string {
@@ -146,7 +152,10 @@ export class Communities extends Component<any, CommunitiesState> {
                     cv => (
                       <tr key={cv.community.id}>
                         <td>
-                          <CommunityLink community={cv.community} />
+                          <CommunityLink
+                            community={cv.community}
+                            blur={this.state.blur}
+                          />
                         </td>
                         <td className="text-right">
                           {numToSI(cv.counts.subscribers)}
