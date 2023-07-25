@@ -7,6 +7,16 @@ import { UserService } from "../shared/services";
 import "bootstrap/js/dist/collapse";
 import "bootstrap/js/dist/dropdown";
 
+localStorage.setItem("blur-nsfw", localStorage.getItem("blur-nsfw") ?? "true");
+localStorage.setItem(
+  "blur-nsfw-community",
+  localStorage.getItem("blur-nsfw-community") ?? "true"
+);
+localStorage.setItem(
+  "auto-expand",
+  localStorage.getItem("auto-expand") ?? "false"
+);
+
 async function startClient() {
   initializeSite(window.isoData.site_res);
 

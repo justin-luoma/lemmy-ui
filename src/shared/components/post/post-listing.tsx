@@ -1,4 +1,5 @@
 import { myAuthRequired } from "@utils/app";
+import { isInViewport } from "@utils/app/is-in-viewport";
 import { canShare, share } from "@utils/browser";
 import { getExternalHost, getHttpBase } from "@utils/env";
 import {
@@ -18,7 +19,7 @@ import {
   isMod,
 } from "@utils/roles";
 import classNames from "classnames";
-import { Component, linkEvent } from "inferno";
+import { Component, RefObject, createRef, linkEvent } from "inferno";
 import { Link } from "inferno-router";
 import {
   AddAdmin,
@@ -96,6 +97,7 @@ interface PostListingState {
   addModLoading: boolean;
   addAdminLoading: boolean;
   transferLoading: boolean;
+  blur: boolean;
 }
 
 interface PostListingProps {
@@ -114,6 +116,7 @@ interface PostListingProps {
   enableDownvotes?: boolean;
   enableNsfw?: boolean;
   viewOnly?: boolean;
+  lazyLoad?: boolean;
   onPostEdit(form: EditPost): void;
   onPostVote(form: CreatePostLike): void;
   onPostReport(form: CreatePostReport): void;
@@ -162,13 +165,28 @@ export class PostListing extends Component<PostListingProps, PostListingState> {
     addModLoading: false,
     addAdminLoading: false,
     transferLoading: false,
+    blur: true,
   };
+  postListingRef: RefObject<HTMLDivElement>;
 
   constructor(props: any, context: any) {
     super(props, context);
 
     this.handleEditPost = this.handleEditPost.bind(this);
     this.handleEditCancel = this.handleEditCancel.bind(this);
+    this.handleScroll = this.handleScroll.bind(this);
+    this.postListingRef = createRef();
+  }
+
+  componentDidMount(): void {
+    this.setState({
+      blur: localStorage.getItem("blur-nsfw") === "true",
+    });
+    window.addEventListener("scroll", this.handleScroll);
+    this.handleScroll();
+  }
+  componentWillUnmount(): void {
+    window.removeEventListener("scroll", this.handleScroll);
   }
 
   componentWillReceiveProps(nextProps: PostListingProps) {
@@ -199,7 +217,7 @@ export class PostListing extends Component<PostListingProps, PostListingState> {
     const post = this.postView.post;
 
     return (
-      <div className="post-listing mt-2">
+      <div ref={this.postListingRef} className="post-listing mt-2">
         {!this.state.showEdit ? (
           <>
             {this.listing()}
@@ -244,7 +262,7 @@ export class PostListing extends Component<PostListingProps, PostListingState> {
     if (this.imageSrc) {
       return (
         <>
-          <div className="offset-sm-3 my-2 d-none d-sm-block">
+          <div className="text-center my-2 d-none d-sm-block">
             <a href={this.imageSrc} className="d-inline-block">
               <PictrsImage src={this.imageSrc} />
             </a>
@@ -301,6 +319,7 @@ export class PostListing extends Component<PostListingProps, PostListingState> {
         thumbnail
         alt=""
         nsfw={post_view.post.nsfw || post_view.community.nsfw}
+        blur={this.state.blur}
       />
     );
   }
@@ -1476,6 +1495,15 @@ export class PostListing extends Component<PostListingProps, PostListingState> {
       save: !i.postView.saved,
       auth: myAuthRequired(),
     });
+  }
+
+  handleScroll() {
+    if (this.state.imageExpanded || !this.props.lazyLoad) return;
+    const inView = isInViewport(this.postListingRef.current);
+    if (inView) {
+      this.setState({ ...this.state, imageExpanded: true });
+      window.removeEventListener("scroll", this.handleScroll);
+    }
   }
 
   get crossPostParams(): PostFormParams {

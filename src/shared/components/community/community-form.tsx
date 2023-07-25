@@ -46,7 +46,9 @@ export class CommunityForm extends Component<
   private id = `community-form-${randomStr()}`;
 
   state: CommunityFormState = {
-    form: {},
+    form: {
+      nsfw: true,
+    },
     submitted: false,
   };
 
